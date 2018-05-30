@@ -137,7 +137,7 @@ extension SyncObject: Syncable {
     }
     
     public func cleanUp() {
-        let cream = Cream<T>()
+        let cream = Cream<T>(realmConfig: self.realmConfig)
         do {
             try cream.deletePreviousSoftDeleteObjects(notNotifying: notificationToken)
         } catch {
