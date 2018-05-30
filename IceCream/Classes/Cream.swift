@@ -10,11 +10,11 @@ public final class Cream<T: Object & CKRecordConvertible> {
     let realm: Realm
     
     // MARK: - Initializer
-    public init(realm: Realm? = nil) {
+    public init(realm: Realm? = nil, realmConfig: Realm.Configuration) {
         if let r = realm {
             self.realm = r
         } else {
-            self.realm = try! Realm()
+            self.realm = try! Realm(configuration: realmConfig)
         }
     }
 }

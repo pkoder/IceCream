@@ -19,7 +19,11 @@ public final class SyncObject<T> where T: Object & CKRecordConvertible & CKRecor
     
     public var pipeToEngine: ((_ recordsToStore: [CKRecord], _ recordIDsToDelete: [CKRecordID]) -> ())?
     
-    public init() {}
+    private var realmConfig: Realm.Configuration
+    
+    public init(realmConfig: Realm.Configuration) {
+        self.realmConfig = realmConfig
+    }
 }
 
 // MARK: - Zone information
@@ -67,7 +71,7 @@ extension SyncObject: Syncable {
         }
         
         DispatchQueue.main.async {
-            let realm = try! Realm()
+            let realm = try! Realm(configuration: self.realmConfig)
             
             /// If your model class includes a primary key, you can have Realm intelligently update or add objects based off of their primary key values using Realm().add(_:update:).
             /// https://realm.io/docs/swift/latest/#objects-with-primary-keys
@@ -83,7 +87,7 @@ extension SyncObject: Syncable {
     
     public func delete(recordID: CKRecordID) {
         DispatchQueue.main.async {
-            let realm = try! Realm()
+            let realm = try! Realm(configuration: self.realmConfig)
             guard let object = realm.object(ofType: T.self, forPrimaryKey: recordID.recordName) else {
                 // Not found in local realm database
                 return
@@ -102,7 +106,7 @@ extension SyncObject: Syncable {
     /// When you commit a write transaction to a Realm, all other instances of that Realm will be notified, and be updated automatically.
     /// For more: https://realm.io/docs/swift/latest/#writes
     public func registerLocalDatabase() {
-        let objects = Cream<T>().realm.objects(T.self)
+        let objects = Cream<T>(realmConfig: self.realmConfig).realm.objects(T.self)
         notificationToken = objects.observe({ [weak self](changes) in
             guard let `self` = self else { return }
             
